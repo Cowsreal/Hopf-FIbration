@@ -30,3 +30,12 @@
 *.exe
 *.out
 *.app
+
+/.vs
+/Debug
+/Release
+imgui.ini
+/src/vendor
+demo.mp4
+/build
+.vscode
