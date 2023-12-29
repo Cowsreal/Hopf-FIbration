@@ -19,6 +19,7 @@ class Hopf
 {
 public:
     Hopf(const std::vector<std::vector<double>>* points, bool drawAsPoints, float pointSize);
+    Hopf(){}; // Default constructor
     ~Hopf();
 
     void UpdateCircles(const std::vector<std::vector<double>>* points);

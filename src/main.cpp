@@ -56,10 +56,11 @@ int main()
     bool fullscreen = false;
     bool vsync = true;
     float escCooldown = 0.5f;
-    float pointSize = 10.0f;
+    float pointSize = 5.0f;
     double lastKeyPressTime = 0;
-    int numPoints = 100;
+    int numPoints[] = {100, 20, 20};
     int numGreatCircles = 1;
+    int numPointsUniform = 20;
     std::vector<float> rotationXs(numGreatCircles, 0.0f);
     std::vector<float> rotationYs(numGreatCircles, 0.0f);
     std::vector<float> rotationZs(numGreatCircles, 0.0f);
@@ -139,7 +140,7 @@ int main()
         camera1.SetFront(forwardVector);
 
         std::vector<std::vector<std::vector<double>>> points;
-        points.push_back(GenerateGreatCircle(rotationXs[0], rotationYs[0], rotationZs[0], numPoints));
+        points.push_back(GenerateGreatCircle(rotationXs[0], rotationYs[0], rotationZs[0], numPoints[0]));
         
         std::vector<Hopf> hopfs;
         hopfs.push_back(Hopf(&(points[0]), drawAsPoints, pointSize));
@@ -162,6 +163,10 @@ int main()
         float fov = 45.0f;
         float speed = 2.5f;
         float sensitivity = 0.1f;
+
+
+        int currentMode = 0; 
+        char* modes[] = {"Great Circle", "Uniform", "Random"};
 
         // RENDERING LOOP
         while (!glfwWindowShouldClose(window))
@@ -214,8 +219,31 @@ int main()
                     ImGui::Checkbox("Ground", &drawGround);
                     ImGui::Checkbox("Coordinate Axis", &drawCoordinateAxis);
                     ImGui::Checkbox("Circle", &drawCircle);
-                    bool nChanged = ImGui::SliderInt("Fibers", &numPoints, 1, 300);
-                    if(mode == "GreatCircle")
+                    bool nChanged = ImGui::SliderInt("Fibers", &numPoints[0], 1, 300);
+                    
+                    if (ImGui::BeginCombo("Mode", modes[currentMode]))
+                    {
+                        for (int n = 0; n < IM_ARRAYSIZE(modes); n++)
+                        {
+                            bool is_selected = (currentMode == n);
+                            if (ImGui::Selectable(modes[n], is_selected))
+                            {
+                                currentMode = n;
+
+                                Initialize(points, currentMode, numPoints[currentMode]); 
+                                pointsDrawers.clear();
+                                pointsDrawers.push_back(Points(points[0], 10.0f));
+                                hopfs.clear();
+                                hopfs.push_back(Hopf(&(points[0]), drawAsPoints, pointSize));
+                            }
+                            if (is_selected)
+                            {
+                                ImGui::SetItemDefaultFocus();
+                            }
+                        }
+                        ImGui::EndCombo();
+                    }
+                    if(modes[currentMode] == "Great Circle")
                     {
                         for(int i = 0; i < numGreatCircles; i++)
                         {
@@ -232,7 +260,7 @@ int main()
 
                             if(xChanged || yChanged || zChanged || nChanged)
                             {
-                                points[i] = GenerateGreatCircle(rotationXs[i], rotationYs[i], rotationZs[i], numPoints);
+                                points[i] = GenerateGreatCircle(rotationXs[i], rotationYs[i], rotationZs[i], numPoints[0]);
                                 pointsDrawers[i].UpdatePoints(&(points[i]));
                                 hopfs[i].UpdateCircles(&(points[i]));
                             }
@@ -244,7 +272,7 @@ int main()
                                 rotationXs[i] = 0.0f;
                                 rotationYs[i] = 0.0f;
                                 rotationZs[i] = 0.0f;
-                                points[i] = GenerateGreatCircle(rotationXs[i], rotationYs[i], rotationZs[i], numPoints);
+                                points[i] = GenerateGreatCircle(rotationXs[i], rotationYs[i], rotationZs[i], numPoints[0]);
                                 pointsDrawers[i].UpdatePoints(&(points[i]));
                                 hopfs[i].UpdateCircles(&(points[i]));
                             }
@@ -258,7 +286,7 @@ int main()
                                     rotationXs.push_back(0.0f);
                                     rotationYs.push_back(0.0f);
                                     rotationZs.push_back(0.0f);
-                                    points.push_back(GenerateGreatCircle(rotationXs[i], rotationYs[i], rotationZs[i], numPoints));
+                                    points.push_back(GenerateGreatCircle(rotationXs[i], rotationYs[i], rotationZs[i], numPoints[0]));
                                     hopfs.push_back(Hopf(&(points[i]), drawAsPoints, pointSize));
                                     pointsDrawers.push_back(Points(points[i], 10.0f));
                                 }
@@ -277,6 +305,27 @@ int main()
                             }
                         }
                     }
+                    else if(modes[currentMode] == "Uniform")
+                    {
+                        if(ImGui::SliderInt("Number of Points", &numPointsUniform, 1, 200))
+                        {
+                            points.clear();
+                            points.push_back(GenerateUniform(numPoints[1]));
+                            pointsDrawers[0].UpdatePoints(&(points[0]));
+                            hopfs[0].UpdateCircles(&(points[0]));
+                        }
+                    }
+                    else if(modes[currentMode] == "Random")
+                    {
+                        if(ImGui::SliderInt("Number of Points", &numPoints[2], 1, 200))
+                        {
+                            points.clear();
+                            points.push_back(GenerateRandom(numPoints[2]));
+                            pointsDrawers[0].UpdatePoints(&(points[0]));
+                            hopfs[0].UpdateCircles(&(points[0]));
+                        }
+                    }
+                    
                     if(ImGui::Checkbox("Draw as Points", &drawAsPoints))
                     {
                         for(int i = 0; i < numGreatCircles; i++)
@@ -286,7 +335,7 @@ int main()
                     }
                     if(drawAsPoints)
                     {
-                        if(ImGui::SliderFloat("Point Size", &pointSize, 1.0f, 20.0f))
+                        if(ImGui::SliderFloat("Point Size", &pointSize, 0.05f, 10.0f))
                         {
                             for(int i = 0; i < numGreatCircles; i++)
                             {

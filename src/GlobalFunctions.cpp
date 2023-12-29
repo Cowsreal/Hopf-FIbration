@@ -7,6 +7,34 @@ void ChangeStates(bool &s1, bool&s2)
 	s2 = !s2;
 }
 
+void Initialize(std::vector<std::vector<std::vector<double>>>& points,
+                const int mode,
+                const int numPoints)
+{
+
+    std::vector<float> rotationXs(1, 0.0f);
+    std::vector<float> rotationYs(1, 0.0f);
+    std::vector<float> rotationZs(1, 0.0f);
+
+    points.clear();
+
+    switch(mode)
+    {
+        case 0:
+            points.push_back(GenerateGreatCircle(rotationXs[0], rotationYs[0], rotationZs[0], numPoints));
+            break;
+        case 1:
+            points.push_back(GenerateUniform(numPoints));
+            break;
+        case 2:
+            points.push_back(GenerateRandom(numPoints));
+            break;
+        default:
+            std::cout << "Invalid mode" << std::endl;
+            break;
+    }
+}        
+
 std::vector<std::vector<double>> GenerateGreatCircle(float rotationX, float rotationY, float rotationZ, int n) 
 {
     std::vector<std::vector<double>> circlePoints;
@@ -15,7 +43,7 @@ std::vector<std::vector<double>> GenerateGreatCircle(float rotationX, float rota
     glm::mat4 rotX = glm::rotate(glm::mat4(1.0f), static_cast<float>(rotationX), glm::vec3(1, 0, 0));
     glm::mat4 rotY = glm::rotate(glm::mat4(1.0f), static_cast<float>(rotationY), glm::vec3(0, 1, 0));
     glm::mat4 rotZ = glm::rotate(glm::mat4(1.0f), static_cast<float>(rotationZ), glm::vec3(0, 0, 1));
-    glm::mat4 rotationMatrix = rotZ * rotY * rotX; // Combined rotation matrix
+    glm::mat4 rotationMatrix = rotZ * rotY * rotX;
 
     // Generate points along the base great circle (equator)
     for (int i = 0; i < n; ++i) {
@@ -30,6 +58,39 @@ std::vector<std::vector<double>> GenerateGreatCircle(float rotationX, float rota
     }
 
     return circlePoints;
+}
+
+std::vector<std::vector<double>> GenerateUniform(int n)
+{
+
+    // Generate uniform points via golden ratio approach (O(n) rather than the usual O(n^2))
+
+    std::vector<std::vector<double>> points;
+
+    double phi = (1 + sqrt(5)) / 2; // Golden ratio
+
+    for (int i = 0; i < n; ++i) {
+        double theta = 2 * PI * i / phi; // theta paramter
+        double phi = acos(1 - 2 * (i + 0.5) / n); // phi parameter
+
+        points.push_back({cos(theta) * sin(phi), sin(theta) * sin(phi), cos(phi)});
+    }
+
+    return points;
+}
+
+std::vector<std::vector<double>> GenerateRandom(int n)
+{
+    std::vector<std::vector<double>> points;
+
+    for (int i = 0; i < n; ++i) 
+    {
+        double theta = 2 * PI * (rand() % 1000) / 1000; // random theta parameter
+        double phi = PI * (rand() % 1000) / 1000; // random phi parameter
+        points.push_back({cos(theta) * sin(phi), sin(theta) * sin(phi), cos(phi)});
+    }
+
+    return points;
 }
 
 std::vector<double> GetColor(std::vector<double> point)

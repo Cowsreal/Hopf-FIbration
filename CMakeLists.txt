@@ -32,12 +32,6 @@ set(SOURCES
 set(INCLUDE_DIRS
     dependencies/include
     src/vendor
-    src/render_geom/CoordinateAxis
-    src/render_geom/Plane
-    src/render_geom/Sphere
-    src/render_geom/Circle
-    src/render_geom/Hopf
-    src/render_geom/Points
 )
 
 set(LIB_DIRS
