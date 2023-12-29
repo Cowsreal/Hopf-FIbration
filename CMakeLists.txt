@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(Hopf)
 add_definitions(-DGLEW_STATIC)
+set(CMAKE_SUPPRESS_REGENERATION true)
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 set(SOURCES
@@ -20,6 +21,7 @@ set(SOURCES
     src/vendor/imgui/imgui_draw.cpp
     src/vendor/imgui/imgui_impl_glfw_gl3.cpp
     src/vendor/stb_image/stb_image.cpp
+    src/render_geom/Plane/Plane.cpp
     src/render_geom/CoordinateAxis/CoordinateAxis.cpp
     src/render_geom/Sphere/Sphere.cpp
     src/render_geom/Circle/Circle.cpp
@@ -31,7 +33,11 @@ set(INCLUDE_DIRS
     dependencies/include
     src/vendor
     src/render_geom/CoordinateAxis
+    src/render_geom/Plane
     src/render_geom/Sphere
+    src/render_geom/Circle
+    src/render_geom/Hopf
+    src/render_geom/Points
 )
 
 set(LIB_DIRS

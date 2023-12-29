@@ -1,7 +1,4 @@
 #include "Hopf.hpp"
-#include "../Circle/Circle.hpp"
-#include <iostream>
-#include <cmath>
 
 Hopf::Hopf(const std::vector<std::vector<double>>* points, bool drawAsPoints = false, float pointSize = 1.0f)
     : m_NumFibers(points->size()), m_S2Points(points)

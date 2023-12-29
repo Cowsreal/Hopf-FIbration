@@ -12,6 +12,7 @@
 
 #include "../Circle/Circle.hpp"
 
+#include <cmath>
 #include <vector>
 
 class Hopf

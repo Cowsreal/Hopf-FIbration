@@ -22,6 +22,7 @@
 #include "FrameBuffer.hpp"
 #include "GlobalFunctions.hpp"
 #include "render_geom/CoordinateAxis/CoordinateAxis.hpp"
+#include "render_geom/Plane/Plane.hpp"
 #include "render_geom/Sphere/Sphere.hpp"
 #include "render_geom/Circle/Circle.hpp"
 #include "render_geom/Hopf/Hopf.hpp"
@@ -111,37 +112,14 @@ int main()
     ImGui_ImplGlfwGL3_Init(window, true);
     ImGui::StyleColorsDark();
     {
-        float positions[] = {
-            -10000.0f,  0.0f, -10000.0f,
-             10000.0f,  0.0f, -10000.0f,
-             10000.0f,  0.0f,  10000.0f,
-            -10000.0f,  0.0f,  10000.0f,
-        };
+        Renderer renderer;
 
-        unsigned int indices[] = {
-            0, 1, 2,        //Triangle 1
-            2, 3, 0 	    //Triangle 2
-        };
-        
-        VertexArray va; //create a vertex array
-        VertexBuffer vb(positions, 4 * 3 * sizeof(float)); //create a vertex buffer
-
-        VertexBufferLayout layout;  //create a vertex buffer layout
-        layout.Push<float>(3);  //push a float with 2 elements to the layout
-        va.AddBuffer(vb, layout, false);   //add the vertex buffer and the layout to the vertex array
-        IndexBuffer ib(indices, 6); //create an index buffer
+        // CREATE SHADERS
 
         Shader shader("res/shaders/Basic.shader"); //create a shader
         Shader shader2("res/shaders/Points.shader"); //create a shader
 
-        va.Unbind();
-        shader.Unbind();
-        vb.Unbind();
-        ib.Unbind();
-
-        Renderer renderer; //create a renderer
-
-        glm::vec3 translationA(0, -1000.0f, 0);
+        // CREATE OBJECTS
 
         float nearPlaneDistance = 0.1;
         Camera camera(45.0f, (float)windowedWidth/ (float)windowedHeight, nearPlaneDistance, 50000.0f, window, true);
@@ -174,14 +152,17 @@ int main()
         Sphere sphere(15.0f, 50);
 
         FrameBuffer fbo = FrameBuffer();
-
         fbo.AttachTexture();
+        
+        Plane plane(10000.0f, 10000.0f);
+        glm::vec3 translationA(0, -1000.0f, 0);
         
         // MOVEMENT SETTINGS
 
         float fov = 45.0f;
         float speed = 2.5f;
         float sensitivity = 0.1f;
+
         // RENDERING LOOP
         while (!glfwWindowShouldClose(window))
         {
@@ -198,7 +179,7 @@ int main()
                 renderer.Clear();
 
                 ImGui::SetNextWindowSize(ImVec2(500, 500));
-                ImGui::SetNextWindowPos(ImVec2(960 - 250, 540 - 250)); // Position: x=50, y=50
+                ImGui::SetNextWindowPos(ImVec2(960 - 250, 540 - 250));
 
                 ImGui::Begin("Application Controls");
 
@@ -373,7 +354,7 @@ int main()
                     glm::mat4 mvp = projectionMatrix * viewMatrix * model;
                     shader.SetUniform4f("u_Color", 0.482f, 0.62f, 0.451f, 1.0f); //set the uniform
                     shader.SetUniformMat4f("u_MVP", mvp); //set the uniform
-                    renderer.Draw(va, ib, shader);
+                    plane.Draw();
                 }
                 if(drawCircle)
                 {

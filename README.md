@@ -38,7 +38,23 @@ As $\theta$ changes, we sweep out a great circle of $S^3$. However, we cannot vi
 
 In summary, this project samples various points in $S^2$ and via the inverse Hopf Map and stereographic projection, returns fibers which we can render in 3D space.
 
-## To Do
+## Usage
+
+1. Clone this repository
+
+2. From the root of the repository, 
+    ```
+    xcopy res build\Release\res /E /I
+    mkdir build
+    cd build
+    cmake -G "Visual Studio 17 2022" -A Win32 ..
+    ```
+
+3. Navigate to /build and build the project using release build either in Visual Studio or in terminal via MSBuild.
+
+4. Run build/release/main.exe
+
+## Future Work
 
 * Clean up code
 * Figure out optimizations for calculating new points
