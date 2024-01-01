@@ -57,10 +57,13 @@ int main()
     bool vsync = true;
     float escCooldown = 0.5f;
     float pointSize = 5.0f;
+    float elevation = 0.0f;
     double lastKeyPressTime = 0;
-    int numPoints[] = {100, 20, 20};
+    int numPoints[] = {100, 20, 20, 100};
     int numGreatCircles = 1;
+    int numElevationCircles = 1;
     int numPointsUniform = 20;
+    std::vector<float> elevations(numElevationCircles, 0.0f);
     std::vector<float> rotationXs(numGreatCircles, 0.0f);
     std::vector<float> rotationYs(numGreatCircles, 0.0f);
     std::vector<float> rotationZs(numGreatCircles, 0.0f);
@@ -166,7 +169,7 @@ int main()
 
 
         int currentMode = 0; 
-        char* modes[] = {"Great Circle", "Uniform", "Random"};
+        char* modes[] = {"Great Circle", "Uniform", "Random", "Elevation"};
 
         // RENDERING LOOP
         while (!glfwWindowShouldClose(window))
@@ -219,24 +222,22 @@ int main()
                     ImGui::Checkbox("Ground", &drawGround);
                     ImGui::Checkbox("Coordinate Axis", &drawCoordinateAxis);
                     ImGui::Checkbox("Circle", &drawCircle);
-                    bool nChanged = ImGui::SliderInt("Fibers", &numPoints[0], 1, 300);
-                    
-                    if (ImGui::BeginCombo("Mode", modes[currentMode]))
+
+                    if(ImGui::BeginCombo("Mode", modes[currentMode]))
                     {
-                        for (int n = 0; n < IM_ARRAYSIZE(modes); n++)
+                        for(int n = 0; n < IM_ARRAYSIZE(modes); n++)
                         {
                             bool is_selected = (currentMode == n);
-                            if (ImGui::Selectable(modes[n], is_selected))
+                            if(ImGui::Selectable(modes[n], is_selected))
                             {
                                 currentMode = n;
-
                                 Initialize(points, currentMode, numPoints[currentMode]); 
                                 pointsDrawers.clear();
                                 pointsDrawers.push_back(Points(points[0], 10.0f));
                                 hopfs.clear();
                                 hopfs.push_back(Hopf(&(points[0]), drawAsPoints, pointSize));
                             }
-                            if (is_selected)
+                            if(is_selected)
                             {
                                 ImGui::SetItemDefaultFocus();
                             }
@@ -245,6 +246,7 @@ int main()
                     }
                     if(modes[currentMode] == "Great Circle")
                     {
+                        bool nChanged = ImGui::SliderInt("Fibers", &numPoints[0], 1, 300);
                         for(int i = 0; i < numGreatCircles; i++)
                         {
                             std::string label = "Great Circle " + std::to_string(i + 1);
@@ -291,7 +293,7 @@ int main()
                                     pointsDrawers.push_back(Points(points[i], 10.0f));
                                 }
                             }
-                            else
+                            else if(numGreatCircles < hopfs.size())
                             {
                                 for(int i = hopfs.size(); i > numGreatCircles; i--)
                                 {
@@ -307,7 +309,7 @@ int main()
                     }
                     else if(modes[currentMode] == "Uniform")
                     {
-                        if(ImGui::SliderInt("Number of Points", &numPointsUniform, 1, 200))
+                        if(ImGui::SliderInt("Number of Points", &numPoints[1], 1, 200))
                         {
                             points.clear();
                             points.push_back(GenerateUniform(numPoints[1]));
@@ -325,6 +327,50 @@ int main()
                             hopfs[0].UpdateCircles(&(points[0]));
                         }
                     }
+                    else if(modes[currentMode] == "Elevation")
+                    {
+                        bool nChanged = ImGui::SliderInt("Fibers", &numPoints[3], 1, 300);
+                        for(int i = 0; i < numElevationCircles; i++)
+                        {
+                            std::string label = "Elevation Circle " + std::to_string(i + 1);
+                            ImGui::Text(label.c_str());
+
+                            std::string elevationLabel = "Elevation##" + std::to_string(i);
+
+                            bool elevChanged = ImGui::SliderFloat(elevationLabel.c_str(), &elevations[i], -3.14159f / 2, 3.14159f / 2);
+
+                            if(elevChanged || nChanged)
+                            {
+                                points[i] = GenerateElevation(numPoints[3], elevations[i]);
+                                pointsDrawers[i].UpdatePoints(&(points[i]));
+                                hopfs[i].UpdateCircles(&(points[i]));
+                            }
+                        }
+                        if(ImGui::SliderInt("Elevation Circles", &numElevationCircles, 1, 10))
+                        {
+                            if(numElevationCircles > hopfs.size())
+                            {
+                                for(int i = hopfs.size(); i < numElevationCircles; i++)
+                                {
+                                    elevations.push_back(0.0f);
+                                    points.push_back(GenerateElevation(numPoints[3], elevations[i]));
+                                    hopfs.push_back(Hopf(&(points[i]), drawAsPoints, pointSize));
+                                    pointsDrawers.push_back(Points(points[i], 10.0f));
+                                }
+                            }
+                            else if(numElevationCircles < hopfs.size())
+                            {
+                                for(int i = hopfs.size(); i > numElevationCircles; i--)
+                                {
+                                    elevations.pop_back();
+                                    points.pop_back();
+                                    hopfs.pop_back();
+                                    pointsDrawers.pop_back();
+                                }
+                            }
+                        }
+                    }
+                    
                     
                     if(ImGui::Checkbox("Draw as Points", &drawAsPoints))
                     {
@@ -371,7 +417,7 @@ int main()
                         sphere.Draw();
                         shader2.Bind();
                         shader2.SetUniformMat4f("u_MVP", mvp);
-                        for(int i = 0; i < numGreatCircles; i++)
+                        for(int i = 0; i < pointsDrawers.size(); i++)
                         {
                             pointsDrawers[i].Draw();
                         }
@@ -411,7 +457,7 @@ int main()
                     glm::mat4 model = glm::mat4(1.0f); //create a model matrix
                     glm::mat4 mvp = projectionMatrix * viewMatrix * model;
                     shader.SetUniformMat4f("u_MVP", mvp); //set the uniform
-                    for(int i = 0; i < numGreatCircles; i++)
+                    for(int i = 0; i < hopfs.size(); i++)
                     {
                         hopfs[i].Draw(&shader);
                     }

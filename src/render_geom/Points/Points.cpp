@@ -23,7 +23,7 @@ Points::Points(std::vector<std::vector<double>> points, float pointSize = 1.0f)
 void Points::UpdatePoints(std::vector<std::vector<double>>* points)
 {
     m_Colors.clear();
-    m_Points = (*points);
+    m_Points = *points;
     for (int i = 0; i < m_Points.size(); i++)
     {
         m_Colors.push_back(GetColor((*points)[i]));

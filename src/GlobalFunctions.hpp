@@ -19,6 +19,7 @@ void Initialize(std::vector<std::vector<std::vector<double>>>& points,
 std::vector<std::vector<double>> GenerateGreatCircle(float rotationX, float rotationY, float rotationZ, int n);
 std::vector<std::vector<double>> GenerateUniform(int n);
 std::vector<std::vector<double>> GenerateRandom(int n);
+std::vector<std::vector<double>> GenerateElevation(int n, double elevation);
 std::vector<double> GetColor(std::vector<double> point);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void SetVsync(bool &vsync);

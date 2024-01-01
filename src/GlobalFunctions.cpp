@@ -29,6 +29,9 @@ void Initialize(std::vector<std::vector<std::vector<double>>>& points,
         case 2:
             points.push_back(GenerateRandom(numPoints));
             break;
+        case 3:
+            points.push_back(GenerateElevation(numPoints, PI / 4));
+            break;
         default:
             std::cout << "Invalid mode" << std::endl;
             break;
@@ -69,7 +72,8 @@ std::vector<std::vector<double>> GenerateUniform(int n)
 
     double phi = (1 + sqrt(5)) / 2; // Golden ratio
 
-    for (int i = 0; i < n; ++i) {
+    for (int i = 0; i < n; ++i) 
+    {
         double theta = 2 * PI * i / phi; // theta paramter
         double phi = acos(1 - 2 * (i + 0.5) / n); // phi parameter
 
@@ -88,6 +92,21 @@ std::vector<std::vector<double>> GenerateRandom(int n)
         double theta = 2 * PI * (rand() % 1000) / 1000; // random theta parameter
         double phi = PI * (rand() % 1000) / 1000; // random phi parameter
         points.push_back({cos(theta) * sin(phi), sin(theta) * sin(phi), cos(phi)});
+    }
+
+    return points;
+}
+
+std::vector<std::vector<double>> GenerateElevation(int n, double elevation)
+{
+    std::vector<std::vector<double>> points;
+
+    // Generate a circle on sphere with elevation elevation in [-pi/2, pi/2]
+
+    for (int i = 0; i < n; ++i) 
+    {
+        double theta = 2 * PI * i / n; // theta paramter
+        points.push_back({sin(elevation) * cos(theta), sin(elevation) * sin(theta), cos(elevation)});
     }
 
     return points;
